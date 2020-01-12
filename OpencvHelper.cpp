@@ -5,34 +5,11 @@
  *      Author: andre
  */
 
-#ifndef IOSTREAM
-#define IOSTREAM
-#include <iostream>
-#endif
-
-#ifndef OPENCV_HPP
-#define OPENCV_HPP
-#include <opencv2/opencv.hpp>
-#endif
-
-
+#include "imports.h"
+#include "definitions.h"
 #include "OpencvHelper.h"
 
 using namespace cv;
-
-int test(){
-	std::cout << "hello\n";
-	return 0;
-}
-
-Mat openImage(std::string path){
-		Mat image = imread(path);
-		if(image.empty()){
-			std::cout << "reading failed\n";
-			throw "reading failed";
-		}
-		return image;
-}
 
 Mat openImage_grayscale(std::string path){
 	Mat image = imread(path, IMREAD_GRAYSCALE);
@@ -51,15 +28,13 @@ void showImage(cv::Mat image, std::string title, int windowWidth, int windowHeig
 		waitKey(0);
 }
 
-uint8_t* matToInts8(Mat image){
-	uint8_t* pixels = image.ptr(0);
-	return pixels;
-}
 
-Mat ints8ToMat(uint8_t* pixels, int width, int height){
-	Mat image = Mat(width, height, CV_8UC1, pixels);
-	return image;
-}
+Mat addBorder_Grayscale(cv::Mat image, int bordersize){
+	Mat result = image;
+	int top = bordersize, bottom = bordersize, left = bordersize, right = bordersize;
+	copyMakeBorder(image, result, top,  bottom,  left,  right, BORDER_REPLICATE);
+	return result;
 
+}
 
 
