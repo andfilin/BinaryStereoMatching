@@ -34,7 +34,7 @@ Mat addBorder_Grayscale(cv::Mat image, int bordersize){
 	int top = bordersize, bottom = bordersize, left = bordersize, right = bordersize;
 	copyMakeBorder(image, result, top,  bottom,  left,  right, BORDER_REPLICATE);
 	return result;
-
 }
+
 
 

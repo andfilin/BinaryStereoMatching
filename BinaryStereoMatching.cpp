@@ -16,7 +16,8 @@ using namespace cv;
 * calculates probability for each value in 1D-Kernelwindow of size <windowsize>
 * using gauss-distribution.
 */
-double* gaussDist(int windowsize, double sigma){
+double* gaussDist(int windowsize, double sigma, int randSeed){
+	srand(randSeed);
 	int max_x = (windowsize - 1) / 2;
 	double* probabilities = (double*) malloc(windowsize * sizeof(double));
 	double sum = 0;
@@ -51,7 +52,7 @@ int* randomKernelCoords(int numberPoints, int windowsize, int sigma) {
 	// allocate space for result
 	int* coords = (int*) malloc(sizeof(int) * numberPoints*2);
 	// calculate weights via gauss
-	double* weights = gaussDist(windowsize, sigma);
+	double* weights = gaussDist(windowsize, sigma, SEED);
 
 	// fill coordsarray
 	int maxVal = (windowsize - 1) / 2;
@@ -117,7 +118,7 @@ inline void brief_row(uint8_t* pixelrow, int rowWidth, int borderWidth, int* ker
  * finds distance to descriptor in right-array with minimal hamming-distance.
  * Returns: int16-array of distances, size is equal to inputarrays.
  * */
-inline void compareBriefRows(brief* descriptors_left, brief* descriptors_right, int length, uint16_t* targetBuffer){
+inline void compareBriefRows(brief* descriptors_left, brief* descriptors_right, int length, uint8_t* targetBuffer){
 
 	// iterate left descriptors
 	for(int indexLeft = 0; indexLeft < length; indexLeft++){
@@ -156,13 +157,10 @@ inline void compareBriefRows(brief* descriptors_left, brief* descriptors_right, 
 }
 
 /*
- * Make Depth-map.
+ * Makes Disparity-map from two input images.
+ * For Calculating BRIEF-Descriptors, uses coordinates in kernelCoords.
  * */
-uint16_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords, int windowsize){
-
-	clock_t begin_row, end_row;
-	float z_row;
-
+uint8_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords, int windowsize){
 	// ----------------------------------
 	// 1. Initialization
 	// initialize dimensions and allocate space
@@ -171,8 +169,6 @@ uint16_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords,
 	// assume both images have identical dimensions
 	int width = imageLeft.cols;
 	int height = imageLeft.rows;
-	int pixelsLength = width * height;
-
 	// we will ignore the border of the image where the window does not fit
 	int bordersize = (windowsize - 1) / 2;
 	int disparitymapWidth = width - 2 * bordersize;
@@ -182,10 +178,9 @@ uint16_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords,
 	// Allocate space to hold a row of descriptors at once, for both images
 	brief* leftrow_descriptors =  (brief*) malloc(sizeof(brief) * disparitymapWidth);
 	brief* rightrow_descriptors = (brief*) malloc(sizeof(brief) * disparitymapWidth);
-
-	// allocate space for resultarray holding the disparities
-	uint16_t* disparitymap = (uint16_t*) malloc(sizeof(uint16_t) * disparitymapLength);
-	uint16_t* disparitymaprow = disparitymap;
+	// Allocate space for resultarray holding the disparities
+	uint8_t* disparitymap = (uint8_t*) malloc(sizeof(uint8_t) * disparitymapLength);
+	uint8_t* disparitymaprow = disparitymap;
 
 	// ----------------------------------
 	// 2. Iteration
@@ -193,60 +188,31 @@ uint16_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords,
 
 	// iterate rows in left image - ignoring border
 	for(int row = bordersize; row < (height - bordersize); row++){
-
-		begin_row = clock();
-		clock_t begin_desc = clock();
-
 		// get pointers to row in both images
 		uint8_t* rowptr_left = imageLeft.ptr<uint8_t>(row);
 		uint8_t* rowptr_right = imageRight.ptr<uint8_t>(row);
 		// calculate the rows briefdescriptors, write them to corresponding buffer
 		brief_row(rowptr_left, width, bordersize, kernelCoords, leftrow_descriptors);
 		brief_row(rowptr_right, width, bordersize, kernelCoords, rightrow_descriptors);
-
-		clock_t begin_compareRows = clock();
 		// find disparities by comparing the rows, write result to buffer
 		compareBriefRows(leftrow_descriptors, rightrow_descriptors, disparitymapWidth, disparitymaprow);
 		disparitymaprow += disparitymapWidth;
-
-		clock_t begin_free = clock();
-		//freeDescriptors(leftrow_descriptors, descriptorsWidth);
-		//freeDescriptors(rightrow_descriptors, descriptorsWidth);
-
-
-		end_row = clock();
-		z_row=end_row - begin_row;
-		z_row/=CLOCKS_PER_SEC;
-
-		float z_cmp=begin_free - begin_compareRows;
-		z_cmp/=CLOCKS_PER_SEC;
-
-		float z_free=end_row - begin_free;
-		z_free/=CLOCKS_PER_SEC;
-
-		float z_desc=begin_compareRows - begin_desc;
-		z_desc/=CLOCKS_PER_SEC;
-
-		/*std::cout << "\n\nrow: " << row;
-		std::cout <<" \ntime row: " << z_row << "s" ;
-		std::cout <<" \ntime desc: " << z_desc << "s" ;
-		std::cout <<" \ntime cmp: " << z_cmp << "s" ;
-		std::cout <<" \ntime free: " << z_free << "s" ;*/
-
 	}
 	return disparitymap;
 }
-
-uint16_t* BinaryStereoMatching_Multithreaded(Mat imageLeft, Mat imageRight, int* kernelCoords, int windowsize, int threadnumber){
+/*
+ * Same as BinaryStereoMatching(), but using multiple threads.
+ * */
+uint8_t* BinaryStereoMatching_Multithreaded(Mat imageLeft, Mat imageRight, int* kernelCoords, int windowsize, int threadnumber){
 		// ----------------------------------
 		// 1. Initialization
 		// initialize dimensions and allocate space
+		// ----------------------------------
 
 		// Get Dimensions
 		// assume both images have identical dimensions
 		int width = imageLeft.cols;
 		int height = imageLeft.rows;
-		int pixelsLength = width * height;
 
 		// we will ignore the border of the image where the window does not fit
 		int bordersize = (windowsize - 1) / 2;
@@ -254,56 +220,71 @@ uint16_t* BinaryStereoMatching_Multithreaded(Mat imageLeft, Mat imageRight, int*
 		int disparitymapHeight = height - 2 * bordersize;
 		int disparitymapLength = disparitymapWidth * disparitymapHeight;
 
-
 		// pointers to first imagerows ignoring border
 		uint8_t* imageLeft_ptr = imageLeft.ptr<uint8_t>(bordersize);
 		uint8_t* imageRight_ptr = imageRight.ptr<uint8_t>(bordersize);
+
 		// number of rows per thread
 		uint16_t rowsPerThread = disparitymapHeight / threadnumber;
 		uint16_t rowsInLastThread = rowsPerThread + disparitymapHeight % threadnumber;
-		// allocate space for resultarray holding the disparities
-		uint16_t* disparitymap = (uint16_t*) malloc(sizeof(uint16_t) * disparitymapLength);
 
+		// allocate space for resultarray holding the disparities
+		uint8_t* disparitymap = (uint8_t*) malloc(sizeof(uint8_t) * disparitymapLength);
+
+		// ----------------------------------
+		// 2. Threads
+		// make multiple Threads calculate some rows of disparity
+		// ----------------------------------
+
+		// collect threads in a vector to join them later
 		std::vector<std::thread> threads;
 		for(int threadIndex = 0; threadIndex < threadnumber; threadIndex++){
-			// get threadParameters
-			uint16_t rowCount = rowsPerThread;
-			if(threadIndex == threadnumber - 1){
-				rowCount = rowsInLastThread;
-			}
-			uint8_t* leftPtr = imageLeft_ptr + threadIndex * rowsPerThread * width;
-			uint8_t* rightPtr = imageRight_ptr + threadIndex * rowsPerThread * width;
-			uint16_t* disparitymapPtr = disparitymap + threadIndex * rowsPerThread * disparitymapWidth;
-			// keep track of number of finished rows
-//			int finishedRows = 0;
+			// ----------------------------------
+			// 		Threadparameters
+			// ----------------------------------
 
-			// start thread
-			std::thread t([&](int rowCount, uint8_t* leftPtr, uint8_t* rightPtr, uint16_t* dispPtr){
-				uint16_t* disparitymaprow = dispPtr;
+			// number of rows for this thread
+			uint16_t rowCount = (threadIndex == threadnumber - 1) ? rowsInLastThread : rowsPerThread;
+			// pointer to this threads first pixel in left image
+			uint8_t* leftPtr = imageLeft_ptr + threadIndex * rowsPerThread * width;
+			// pointer to this threads first pixel in right image
+			uint8_t* rightPtr = imageRight_ptr + threadIndex * rowsPerThread * width;
+			// pointer to where this thread can write his first value
+			uint8_t* disparitymapPtr = disparitymap + threadIndex * rowsPerThread * disparitymapWidth;
+
+			// ----------------------------------
+			// 		start thread
+			// ----------------------------------
+			std::thread t([&](int rowCount, uint8_t* leftPtr, uint8_t* rightPtr, uint8_t* dispPtr){
+
+				// pointer to current row of disparitymap
+				uint8_t* disparitymaprow = dispPtr;
+
 				// Allocate space to hold a row of descriptors at once, for both images
 				brief* leftrow_descriptors =  (brief*) malloc(sizeof(brief) * disparitymapWidth);
 				brief* rightrow_descriptors = (brief*) malloc(sizeof(brief) * disparitymapWidth);
+
+				// iterate every row this thread has been assigned
 				for(int row = 0; row < rowCount; row++){
 					// get pointers to row in both images
 					uint8_t* rowptr_left = leftPtr + row*width;
 					uint8_t* rowptr_right = rightPtr + row*width;
+
 					// calculate the rows briefdescriptors, write them to corresponding buffer
 					brief_row(rowptr_left, width, bordersize, kernelCoords, leftrow_descriptors);
 					brief_row(rowptr_right, width, bordersize, kernelCoords, rightrow_descriptors);
+
 					// find disparities by comparing the rows, write result to buffer
 					compareBriefRows(leftrow_descriptors, rightrow_descriptors, disparitymapWidth, disparitymaprow);
 					disparitymaprow += disparitymapWidth;
 
-					// output current progress
-//					finishedRows++;
-//					std::cout << finishedRows << " / " << disparitymapHeight <<  "\n";
-//					fflush(stdout);
-
 				}
 			},rowCount, leftPtr, rightPtr, disparitymapPtr);
+
+			// add thread to vector
 			threads.push_back(std::move(t));
 		}
-
+		// join Threads
 		for(std::thread & t : threads){
 			t.join();
 		}
@@ -327,10 +308,6 @@ int main(int argc, char** argv) {
 		std::cout << "using commandline arguments\n ";
 	}
 
-
-
-
-
 	// print number of threads
 	std::cout << "Number of Threads used: " << THREADCOUNT << "\n";
 	fflush(stdout);
@@ -347,7 +324,7 @@ int main(int argc, char** argv) {
 	Mat imageL_expanded = addBorder_Grayscale(imageL, BORDERSIZE);
 	Mat imageR_expanded = addBorder_Grayscale(imageR, BORDERSIZE);
 	// For each pixel, get pixeldisparity from both images
-	uint16_t* distances;
+	uint8_t* distances;
 	if(THREADCOUNT == 1){
 		distances = BinaryStereoMatching(imageL_expanded, imageR_expanded, samples, WINDOWSIZE);
 	} else {
@@ -356,9 +333,16 @@ int main(int argc, char** argv) {
 	// make Mat from disparity
 	int rWidth = imageL_expanded.cols - (WINDOWSIZE - 1);
 	int rHeight = imageR_expanded.rows - (WINDOWSIZE - 1);
-	Mat result = Mat(rHeight, rWidth, CV_16UC1, distances);
+	Mat result = Mat(rHeight, rWidth, CV_8UC1, distances);
+
 	// save resultimage
 	imwrite(result_path, result);
+
+	// equalize historgram of result and save that too
+	equalizeHist(result, result);
+	imwrite(PATH_RESULT2, result);
+
+
 
 	// print elapsed time
 	clock_t clock_end = clock();
