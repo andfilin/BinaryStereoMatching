@@ -6,9 +6,10 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+
+
 #include "imports.h"
 #include "definitions.h"
-#include "OpencvHelper.h"
 
 using namespace cv;
 
@@ -103,10 +104,11 @@ inline void brief_row(uint8_t* pixelrow, int rowWidth, int borderWidth, int* ker
 				//get second pixel
 				uint8_t* pixelB_index = currentPtr + x2 + rowWidth * y2;
 
-				// compare pixels and get Bit
+				// compare pixels and get current Bit
 				uint64_t cmp = *pixelA_index > *pixelB_index;
 				currentElem += cmp << bitIndex;
 			}
+			// set current decriptorelem
 			descriptorElems[elemIndex] = currentElem;
 		}
 	}
@@ -116,10 +118,9 @@ inline void brief_row(uint8_t* pixelrow, int rowWidth, int borderWidth, int* ker
 /*
  * For each descriptor in left-array,
  * finds distance to descriptor in right-array with minimal hamming-distance.
- * Returns: int16-array of distances, size is equal to inputarrays.
+ * writes int8-array of distances to targetBuffer.
  * */
 inline void compareBriefRows(brief* descriptors_left, brief* descriptors_right, int length, uint8_t* targetBuffer){
-
 	// iterate left descriptors
 	for(int indexLeft = 0; indexLeft < length; indexLeft++){
 		// get current left descriptor
@@ -149,9 +150,10 @@ inline void compareBriefRows(brief* descriptors_left, brief* descriptors_right, 
 				// new best pixeldistance is difference of col-indices
 				//uint16_t diff = indexLeft > indexRight ? indexLeft - indexRight : indexRight - indexLeft;
 				uint16_t diff = indexLeft - indexRight;
-				minDisparity = diff > UINT8_MAX? UINT8_MAX : diff;	// set values over 255 to 255
+				minDisparity = diff > UINT8_MAX ? UINT8_MAX : diff;	// set values over 255 to 255
 			}
 		}
+		// set this pixels disparity
 		targetBuffer[indexLeft] = minDisparity;
 	}
 }
@@ -169,7 +171,7 @@ uint8_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords, 
 	// assume both images have identical dimensions
 	int width = imageLeft.cols;
 	int height = imageLeft.rows;
-	// we will ignore the border of the image where the window does not fit
+	// ignore the border of the image where the window does not fit
 	int bordersize = (windowsize - 1) / 2;
 	int disparitymapWidth = width - 2 * bordersize;
 	int disparitymapHeight = height - 2 * bordersize;
@@ -180,6 +182,7 @@ uint8_t* BinaryStereoMatching(Mat imageLeft, Mat imageRight, int* kernelCoords, 
 	brief* rightrow_descriptors = (brief*) malloc(sizeof(brief) * disparitymapWidth);
 	// Allocate space for resultarray holding the disparities
 	uint8_t* disparitymap = (uint8_t*) malloc(sizeof(uint8_t) * disparitymapLength);
+	// pointer where to write results (for one row)
 	uint8_t* disparitymaprow = disparitymap;
 
 	// ----------------------------------
@@ -293,20 +296,36 @@ uint8_t* BinaryStereoMatching_Multithreaded(Mat imageLeft, Mat imageRight, int* 
 
 }
 
+Mat openImage_grayscale(std::string path){
+	Mat image = imread(path, IMREAD_GRAYSCALE);
+	if(image.empty()){
+		std::cout << "reading failed\n";
+		throw "reading failed";
+	}
+	return image;
+}
 
+Mat addBorder_Grayscale(cv::Mat image, int bordersize){
+	Mat result = image;
+	int top = bordersize, bottom = bordersize, left = bordersize, right = bordersize;
+	copyMakeBorder(image, result, top,  bottom,  left,  right, BORDER_REPLICATE);
+	return result;
+}
 
 
 int main(int argc, char** argv) {
 	// parameters - if none given as arguments, use defaultvalues
-	std::string leftImage_path = PATH_IMAGELEFT;
-	std::string rightImage_path = PATH_IMAGERIGHT;
+	std::string leftImage_path = INPUTPATHS[CHOSENINPUT][0];
+	std::string rightImage_path = INPUTPATHS[CHOSENINPUT][1];
 	std::string result_path = PATH_RESULT;
+	std::string result_equalized_path = PATH_RESULT_EQUALIZED;
 	if(argc == 4){
 		leftImage_path = argv[1];
 		rightImage_path = argv[2];
 		result_path = argv[3];
 		std::cout << "using commandline arguments\n ";
 	}
+	//std::string leftImage_path = INPUTPATHS[CHOSENINPUT][0];
 
 	// print number of threads
 	std::cout << "Number of Threads used: " << THREADCOUNT << "\n";
@@ -340,7 +359,7 @@ int main(int argc, char** argv) {
 
 	// equalize historgram of result and save that too
 	equalizeHist(result, result);
-	imwrite(PATH_RESULT2, result);
+	imwrite(result_equalized_path, result);
 
 
 

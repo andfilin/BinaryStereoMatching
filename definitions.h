@@ -8,37 +8,45 @@
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
-//const std::string PATH_IMAGELEFT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Classroom1-perfect\\im0.png";
-//const std::string PATH_IMAGERIGHT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Classroom1-perfect\\im1.png";
-//const std::string PATH_IMAGELEFT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Classroom1-perfect\\im0_mini.png";
-//const std::string PATH_IMAGERIGHT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Classroom1-perfect\\im1_mini.png";
+/* define possible inputs as enum and pathstrings*/
+enum input {CONES = 0, TEDDY = 1, TSUKUBA = 2, VENUS = 3, SHOPVAC = 4, CLASSROOM = 5, MONOPOLY = 6, ENUMLENGTH = 7};
+const std::string CONES_LEFT = ".\\inputs\\cones\\im2.png";
+const std::string CONES_RIGHT = ".\\inputs\\cones\\im6.png";
+const std::string TEDDY_LEFT = ".\\inputs\\teddy\\im2.png";
+const std::string TEDDY_RIGHT = ".\\inputs\\teddy\\im6.png";
+const std::string TSUKUBA_LEFT = ".\\inputs\\tsukuba\\scene1.row3.col3.ppm";
+const std::string TSUKUBA_RIGHT = ".\\inputs\\tsukuba\\scene1.row3.col4.ppm";
+const std::string VENUS_LEFT = ".\\inputs\\venus\\im2.ppm";
+const std::string VENUS_RIGHT = ".\\inputs\\venus\\im6.ppm";
 
-//const std::string PATH_IMAGELEFT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Monopoly\\view1.png";
-//const std::string PATH_IMAGERIGHT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\Monopoly\\view5.png";
+const std::string SHOPVAC_LEFT = ".\\inputs\\shopvac\\im0.png";
+const std::string SHOPVAC_RIGHT = ".\\inputs\\shopvac\\im1.png";
+const std::string CLASSROOM_LEFT = ".\\inputs\\classroom\\im0.png";
+const std::string CLASSROOM_RIGHT = ".\\inputs\\classroom\\im1.png";
+const std::string MONOPOLY_LEFT = ".\\inputs\\monopoly\\view1.png";
+const std::string MONOPOLY_RIGHT = ".\\inputs\\monopoly\\view5.png";
 
-const std::string PATH_IMAGELEFT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\cones\\im2.png";
-const std::string PATH_IMAGERIGHT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\cones\\im6.png";
+/*For each input, 2 Strings == leftImage, rightimage*/
+std::string INPUTPATHS[ENUMLENGTH][2] = {
+		{CONES_LEFT, CONES_RIGHT},
+		{TEDDY_LEFT, TEDDY_RIGHT},
+		{TSUKUBA_LEFT, TSUKUBA_RIGHT},
+		{VENUS_LEFT, VENUS_RIGHT},
+		{SHOPVAC_LEFT, SHOPVAC_RIGHT},
+		{CLASSROOM_LEFT, CLASSROOM_RIGHT},
+		{MONOPOLY_LEFT, MONOPOLY_RIGHT}
+};
 
-//const std::string PATH_IMAGELEFT = ".\\im2.png";
-//const std::string PATH_IMAGERIGHT = ".\\im6.png";
-
-//const std::string PATH_IMAGELEFT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\tsukuba\\scene1.row3.col1.ppm";
-//const std::string PATH_IMAGERIGHT = "D:\\studium\\master\\bildverstehen\\Implementierung\\daten\\tsukuba\\scene1.row3.col5.ppm";
-
-
-const std::string PATH_RESULT = "D:\\studium\\master\\bildverstehen\\imageJ\\result.png";
-const std::string PATH_RESULT2 = "D:\\studium\\master\\bildverstehen\\imageJ\\result_equalized.png";
-//const std::string PATH_RESULT = ".\\result.png";
-
-
-
+const std::string PATH_RESULT = ".\\result.png";
+const std::string PATH_RESULT_EQUALIZED = ".result_equalized.png";
 
 //-------------------------
 // choosable parameters
 //
+// inputimages
+const int CHOSENINPUT = TEDDY;
 // Number of Bits per Descriptor
 const int DESCRIPTORBITS = 4096;
-//const int DESCRIPTORBITS = 8192;
 // Size of kernelwindow
 const int WINDOWSIZE = 27;
 // standardeviation of gauss
