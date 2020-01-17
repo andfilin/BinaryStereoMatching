@@ -8,6 +8,21 @@
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
+//-------------------------
+// choosable parameters
+//-------------------------
+// Number of Bits per Descriptor
+const int DESCRIPTORBITS = 4096;
+// Size of kernelwindow
+const int WINDOWSIZE = 27;
+// standardeviation of gauss
+const int GAUSS_SIGMA = 4;
+// Number of Threads to use
+const int THREADCOUNT = std::thread::hardware_concurrency();
+// Seed for RNG
+const int SEED = 17;
+
+
 /* define possible inputs as enum and pathstrings*/
 enum input {CONES = 0, TEDDY = 1, TSUKUBA = 2, VENUS = 3, SHOPVAC = 4, CLASSROOM = 5, MONOPOLY = 6, ENUMLENGTH = 7};
 const std::string CONES_LEFT = ".\\inputs\\cones\\im2.png";
@@ -37,24 +52,13 @@ std::string INPUTPATHS[ENUMLENGTH][2] = {
 		{MONOPOLY_LEFT, MONOPOLY_RIGHT}
 };
 
+// default inputimages
+const int CHOSENINPUT = TEDDY;
+
 const std::string PATH_RESULT = ".\\result.png";
 const std::string PATH_RESULT_EQUALIZED = ".result_equalized.png";
 
-//-------------------------
-// choosable parameters
-//
-// inputimages
-const int CHOSENINPUT = TEDDY;
-// Number of Bits per Descriptor
-const int DESCRIPTORBITS = 4096;
-// Size of kernelwindow
-const int WINDOWSIZE = 27;
-// standardeviation of gauss
-const int GAUSS_SIGMA = 4;
-// Number of Threads to use
-const int THREADCOUNT = std::thread::hardware_concurrency();
-// Seed for RNG
-const int SEED = 17;
+
 
 //-------------------------
 // consts derived from parameters

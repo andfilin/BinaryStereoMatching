@@ -317,16 +317,14 @@ int main(int argc, char** argv) {
 	// parameters - if none given as arguments, use defaultvalues
 	std::string leftImage_path = INPUTPATHS[CHOSENINPUT][0];
 	std::string rightImage_path = INPUTPATHS[CHOSENINPUT][1];
+
 	std::string result_path = PATH_RESULT;
 	std::string result_equalized_path = PATH_RESULT_EQUALIZED;
-	if(argc == 4){
+	if(argc >=3){
 		leftImage_path = argv[1];
 		rightImage_path = argv[2];
-		result_path = argv[3];
-		std::cout << "using commandline arguments\n ";
+		std::cout << "using imagepahts from commandline arguments\n ";
 	}
-	//std::string leftImage_path = INPUTPATHS[CHOSENINPUT][0];
-
 	// print number of threads
 	std::cout << "Number of Threads used: " << THREADCOUNT << "\n";
 	fflush(stdout);

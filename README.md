@@ -11,23 +11,11 @@ http://vision.middlebury.edu/stereo/
 OpenCV
 
 ## Verwendung:
-BinaryStereoMatching.exe *eingabebild_links* *eingabebild_rechts* *n* *threads*
-
-## Argumente:
-* eingabebild_links, eingabebild_rechts:  
-	Pfade zu den Eingabebildern
-* n:  
-Länge des Deskripors in Bits. Default: 4096
-* threads:  
-Anzahl der zu verwendenden Threads. Default: Maximale Zahl paralleler Threads.
+BinaryStereoMatching.exe *eingabebild_links* *eingabebild_rechts*  
+Alle Parameter können in der Datei definitions.h angepasst werden.
 	
 ## Output:
 * result.png  
 Bild aus Disparitäten zwischen 0 und 255
 * result_equalized.png  
 normalisiertes Ergebnis, mittels opencvfunktion equalizeHist()
-
-## Beispiele:
-BinaryStereoMatching.exe .\inputs\im0.png .\inputs\im1.png 4096 1  
-BinaryStereoMatching.exe .\inputs\im0.png .\inputs\im1.png 4096  
-BinaryStereoMatching.exe .\inputs\im0.png .\inputs\im1.png  
