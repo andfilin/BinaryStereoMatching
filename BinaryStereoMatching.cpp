@@ -1,14 +1,8 @@
-//============================================================================
-// Name        : BinaryStereoMatching.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
 
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <thread>
 
-
-#include "imports.h"
 #include "definitions.h"
 
 using namespace cv;
@@ -30,7 +24,6 @@ double* gaussDist(int windowsize, double sigma, int randSeed){
 
 		// test: equaldistribution
 		//y = 1;
-
 
 		probabilities[x + max_x] = y;
 		sum += y;
@@ -314,16 +307,13 @@ Mat addBorder_Grayscale(cv::Mat image, int bordersize){
 
 
 int main(int argc, char** argv) {
-	// parameters - if none given as arguments, use defaultvalues
+	// inputimages- if none given as arguments, use defaultvalues
 	std::string leftImage_path = INPUTPATHS[CHOSENINPUT][0];
 	std::string rightImage_path = INPUTPATHS[CHOSENINPUT][1];
-
-	std::string result_path = PATH_RESULT;
-	std::string result_equalized_path = PATH_RESULT_EQUALIZED;
 	if(argc >=3){
 		leftImage_path = argv[1];
 		rightImage_path = argv[2];
-		std::cout << "using imagepahts from commandline arguments\n ";
+		std::cout << "using imagepaths from commandline arguments\n ";
 	}
 	// print number of threads
 	std::cout << "Number of Threads used: " << THREADCOUNT << "\n";
@@ -353,11 +343,11 @@ int main(int argc, char** argv) {
 	Mat result = Mat(rHeight, rWidth, CV_8UC1, distances);
 
 	// save resultimage
-	imwrite(result_path, result);
+	imwrite(PATH_RESULT, result);
 
 	// equalize historgram of result and save that too
 	equalizeHist(result, result);
-	imwrite(result_equalized_path, result);
+	imwrite(PATH_RESULT_EQUALIZED, result);
 
 
 

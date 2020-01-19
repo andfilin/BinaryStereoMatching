@@ -1,9 +1,3 @@
-/*
- * definitions_imports.h
- *
- *  Created on: 28.12.2019
- *      Author: andre
- */
 
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
@@ -21,9 +15,31 @@ const int GAUSS_SIGMA = 4;
 const int THREADCOUNT = std::thread::hardware_concurrency();
 // Seed for RNG
 const int SEED = 17;
+// resultimagepath
+const std::string PATH_RESULT = ".\\result.png";
+// equalized resultimagepath
+const std::string PATH_RESULT_EQUALIZED = ".\\result_equalized.png";
+
+//-------------------------
+// consts derived from parameters
+//
+// number of int64_t's needed to store one descriptor
+const int ELEMS_PER_DESCRIPTOR = DESCRIPTORBITS / 8 / sizeof(int64_t);
+// in kernel, distance from center to border
+const int BORDERSIZE = (WINDOWSIZE - 1) / 2;
+
+// define a brief-descriptor as array of int64_t's
+struct brief {
+	uint64_t elems[ELEMS_PER_DESCRIPTOR];
+};
 
 
-/* define possible inputs as enum and pathstrings*/
+
+
+
+
+
+// paths of some inputimages, using enum
 enum input {CONES = 0, TEDDY = 1, TSUKUBA = 2, VENUS = 3, SHOPVAC = 4, CLASSROOM = 5, MONOPOLY = 6, ENUMLENGTH = 7};
 const std::string CONES_LEFT = ".\\inputs\\cones\\im2.png";
 const std::string CONES_RIGHT = ".\\inputs\\cones\\im6.png";
@@ -54,24 +70,6 @@ std::string INPUTPATHS[ENUMLENGTH][2] = {
 
 // default inputimages
 const int CHOSENINPUT = TEDDY;
-
-const std::string PATH_RESULT = ".\\result.png";
-const std::string PATH_RESULT_EQUALIZED = ".result_equalized.png";
-
-
-
-//-------------------------
-// consts derived from parameters
-//
-// number of int64_t's needed to store one descriptor
-const int ELEMS_PER_DESCRIPTOR = DESCRIPTORBITS / 8 / sizeof(int64_t);
-// in kernel, distance from center to border
-const int BORDERSIZE = (WINDOWSIZE - 1) / 2;
-
-// define a brief-descriptor as array of int64_t's
-struct brief {
-	uint64_t elems[ELEMS_PER_DESCRIPTOR];
-};
 
 
 
